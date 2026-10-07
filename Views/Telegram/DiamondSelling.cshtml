@@ -1,0 +1,203 @@
+﻿
+@{
+    ViewData["Title"] = "Diamond Selling";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mobile Legends - Diamond Top Up</title>
+
+   <link href="~/css/DiamondSelling.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <div class="background-glow">
+        <div class="orb one"></div>
+        <div class="orb two"></div>
+        <div class="orb three"></div>
+    </div>
+
+    <main class="page">
+
+        <div class="top-title">
+
+            <div class="small">
+                မြန်ဆန် • လုံခြုံ • ချက်ချင်း
+            </div>
+
+            <h1>
+                DIAMOND ဖြည့်မယ်
+            </h1>
+
+            <p>
+                Mobile Legends အကောင့်အတွက် Diamond ဖြည့်သွင်းရန်
+            </p>
+
+        </div>
+
+
+        <div class="game-header">
+
+            <div class="game-icon">
+                💎
+            </div>
+
+            <div>
+
+                <h2>
+                    Mobile Legends: Bang Bang
+                </h2>
+
+                <span>
+                    မိမိဝယ်ယူလိုသော Package ကို ရွေးချယ်ပါ
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- PLAYER INFORMATION -->
+
+        <div class="input-row">
+
+            <div class="input-group">
+
+                <label>
+                    PLAYER ID
+                </label>
+
+                <input type="text"
+                       id="userId"
+                       class="input-box"
+                       placeholder="Player ID ထည့်ပါ"
+                       autocomplete="off">
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    SERVER ID
+                </label>
+
+                <input type="text"
+                       id="serverId"
+                       class="input-box"
+                       placeholder="Server ID ထည့်ပါ"
+                       autocomplete="off">
+
+            </div>
+
+        </div>
+
+
+        <!-- SPECIAL PACKAGES -->
+
+        <div class="section-title">
+
+            <h3>
+                🎁 အထူး Package များ
+            </h3>
+
+            <span>
+                လူကြိုက်များသော Package များ
+            </span>
+
+        </div>
+
+
+        <div id="specialGrid" class="diamond-grid">
+        </div>
+
+
+        <!-- RECHARGE EVENT -->
+
+        <div class="section-title" style="margin-top:35px;">
+
+            <h3>
+                🔥 Recharge Event
+            </h3>
+
+            <span>
+                Bonus Diamond ပါဝင်သည်
+            </span>
+
+        </div>
+
+
+        <div id="rechargeGrid" class="diamond-grid">
+        </div>
+
+
+        <!-- NORMAL DIAMONDS -->
+
+        <div class="section-title" style="margin-top:35px;">
+
+            <h3>
+                💎 Diamond Package များ
+            </h3>
+
+            <span>
+                မိမိလိုအပ်သလောက် ရွေးချယ်ပါ
+            </span>
+
+        </div>
+
+
+        <div id="diamondGrid" class="diamond-grid">
+        </div>
+
+
+        <!-- LOADING -->
+
+        <div id="loading" class="loading">
+
+            <div class="loader"></div>
+
+            Diamond ဈေးနှုန်းများ ရယူနေပါသည်...
+
+        </div>
+
+
+        <div id="error" class="error"></div>
+
+
+        <!-- PURCHASE -->
+
+        <div id="purchaseBar"
+             class="purchase-bar"
+             style="display:none;">
+             
+            <div class="selected-info">
+
+                ရွေးချယ်ထားသော Package
+
+                <strong id="selectedText">
+                    -
+                </strong>
+
+            </div>
+
+
+            <button id="buyButton"
+                    class="buy-button"
+                    type="button">
+                ဆက်လက်ဝယ်ယူမည် →
+            </button>
+
+        </div>      
+        
+
+    </main>
+   
+   <script src="~/js/DiamondSelling.js"></script>
+
+</body>
+</html>

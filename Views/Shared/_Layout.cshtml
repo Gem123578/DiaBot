@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - diabot</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/diabot.styles.css" asp-append-version="true" />
+    <style>
+
+        /* =====================================================
+           APP ALERT MODAL
+        ===================================================== */
+        .app-alert-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+
+        /* SHOW */
+
+        .app-alert-backdrop.show {
+            display: flex;
+            animation: alertFadeIn 0.25s ease forwards;
+        }
+
+
+        /* CARD */
+
+        .app-alert-card {
+            width: min(420px, 100%);
+            background: linear-gradient( 145deg, rgba(35, 30, 65, 0.98), rgba(15, 15, 30, 0.98) );
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 22px;
+            padding: 22px;
+            color: white;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55), 0 0 35px rgba(120, 80, 255, 0.18);
+            transform: scale(0.9) translateY(20px);
+            animation: alertCardIn 0.3s cubic-bezier(.2,.8,.2,1) forwards;
+        }
+
+
+        /* HEADER */
+
+        .app-alert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+
+            .app-alert-header .d-flex {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+
+        .app-alert-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: rgba(255, 180, 0, 0.15);
+            font-size: 22px;
+        }
+
+
+        .app-alert-title {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+
+        /* CLOSE */
+
+        .app-alert-close {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+
+            .app-alert-close:hover {
+                background: rgba(255, 255, 255, 0.16);
+                transform: rotate(90deg);
+            }
+
+
+        /* BODY */
+
+        .app-alert-body {
+            padding: 20px 0;
+        }
+
+
+        .app-alert-message {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+
+        /* ACTIONS */
+
+        .app-alert-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+
+        .app-alert-btn {
+            min-width: 90px;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+
+        .app-alert-btn-confirm {
+            background: linear-gradient( 135deg, #7c4dff, #536dfe );
+            color: white;
+            box-shadow: 0 8px 20px rgba(92, 70, 255, 0.25);
+        }
+
+
+            .app-alert-btn-confirm:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 28px rgba(92, 70, 255, 0.35);
+            }
+
+
+        .app-alert-btn-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+
+            .app-alert-btn-cancel:hover {
+                background: rgba(255, 255, 255, 0.14);
+            }
+
+
+        /* ANIMATION */
+
+        @@keyframes alertFadeIn {
+            from
+
+        {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+
+        }
+
+
+        @@keyframes alertCardIn {
+            from
+
+        {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        }
+
+
+        /* MOBILE */
+
+        @@media (max-width: 500px) {
+            .app-alert-card
+
+        {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .app-alert-title {
+            font-size: 17px;
+        }
+
+        .app-alert-message {
+            font-size: 14px;
+        }
+
+        .app-alert-actions {
+            flex-direction: column-reverse;
+        }
+
+        .app-alert-btn {
+            width: 100%;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+               @*  <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">diabot</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button> *@
+               @*  <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                </div> *@
+            </div>
+        </nav>
+    </header>
+
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+   @*  <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - diabot - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer> *@
+
+    <div id="globalAlertModal" class="app-alert-backdrop" role="dialog" aria-modal="true">
+        <div class="app-alert-card">
+
+            <div class="app-alert-header">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="app-alert-icon" id="globalAlertIcon"></div>
+                    <h3 id="globalAlertTitle" class="app-alert-title">
+                        Warning Message
+                    </h3>
+                </div>
+
+                <button class="app-alert-close"
+                        onclick="closeAppAlert()"
+                        aria-label="Close">
+                    &times;
+                </button>
+            </div>
+
+            <div class="app-alert-body">
+                <p id="globalAlertMessage" class="app-alert-message">
+
+                </p>
+            </div>
+
+            <div class="app-alert-actions">
+                <button id="globalAlertConfirmBtn"
+                        class="app-alert-btn app-alert-btn-confirm">
+                    OK
+                </button>
+
+                <button id="globalAlertCancelBtn"
+                        class="app-alert-btn app-alert-btn-cancel"
+                        onclick="closeAppAlert()">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+
+        function showAppAlert(options = {}) {
+
+            const {
+                title = "Message",
+                message = "",
+                type = "info",
+                confirmText = "OK",
+                cancelText = "Cancel",
+                showCancel = null,
+                confirmClass = "",
+                onConfirm = null,
+                onCancel = null
+            } = options;
+
+            currentConfirmCallback = onConfirm;
+
+            const confirmBtn = document.getElementById("globalAlertConfirmBtn");
+            const cancelBtn = document.getElementById("globalAlertCancelBtn");
+            const icon = document.getElementById("globalAlertIcon");
+
+            document.getElementById("globalAlertTitle").textContent = title;
+            document.getElementById("globalAlertMessage").innerHTML = message;
+
+            confirmBtn.textContent = confirmText;
+            cancelBtn.textContent = cancelText;
+
+            confirmBtn.className = "app-alert-btn app-alert-btn-confirm";
+            if (confirmClass)
+                confirmBtn.classList.add(confirmClass);
+
+            // Reset icon
+            icon.className = "app-alert-icon";
+
+            const icons = {
+                info: {
+                    icon: "bi bi-info-circle-fill",
+                    class: "icon-info"
+                },
+                success: {
+                    icon: "bi bi-check-circle-fill",
+                    class: "icon-success"
+                },
+                warning: {
+                    icon: "bi bi-exclamation-triangle-fill",
+                    class: "icon-warning"
+                },
+                error: {
+                    icon: "bi bi-x-circle-fill",
+                    class: "icon-error"
+                },
+                confirmation: {
+                    icon: "bi bi-question-circle-fill",
+                    class: "icon-confirmation"
+                }
+            };
+
+            const selected = icons[type] || icons.info;
+
+            icon.innerHTML = `<i class="${selected.icon}"></i>`;
+            icon.classList.add(selected.class);
+
+            const shouldShowCancel = showCancel ?? (typeof onConfirm === "function");
+
+            cancelBtn.style.display = shouldShowCancel ? "" : "none";
+
+            cancelBtn.onclick = function () {
+
+                if (typeof onCancel === "function")
+                    onCancel();
+
+                closeAppAlert();
+            };
+
+            document
+                .getElementById("globalAlertModal")
+                .classList.add("is-visible");
+        }
+
+        function closeAppAlert() {
+            document
+                .getElementById("globalAlertModal")
+                .classList.remove("is-visible");
+
+            currentConfirmCallback = null;
+        }
+
+        document
+            .getElementById("globalAlertConfirmBtn")
+            .addEventListener("click", () => {
+
+                if (typeof currentConfirmCallback === "function")
+                    currentConfirmCallback();
+
+                closeAppAlert();
+            });
+    </script>
+
+</body>
+</html>
