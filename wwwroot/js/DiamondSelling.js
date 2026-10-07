@@ -132,12 +132,12 @@ function loadSpecialPackages(data) {
                 </div>
 
                 <div class="price">
-                    ${Number(item.price).toLocaleString()} Ks
+                    ${Number(item.sellingPrice).toLocaleString()} Ks
                 </div>
 `;
 
 
-            card.addEventListener("click", function () { selectCard(card, { type: "special", packageType: item.type, name: item.name, price: item.price }); });
+            card.addEventListener("click", function () { selectCard(card, { type: "special", packageType: item.type, name: item.name, price: item.sellingPrice }); });
 
 
             grid.appendChild(card);
@@ -201,27 +201,23 @@ function loadRechargePackages(data) {
                 </div>
 
                 <div class="price">
-                    ${Number(item.price).toLocaleString()} Ks
+                    ${Number(item.sellingPrice).toLocaleString()} Ks
                 </div>
 `;
 
+            card.addEventListener("click", function () {
 
-            // CLICK
-            card.addEventListener(
-                "click",
-                function () {
+                selectCard(card, {
+                    type: "recharge",
+                    packageType: "recharge",
+                    name: item.name,
+                    diamond: item.diamond,
+                    bonus: item.bonus,
+                    total: item.total,
+                    price: item.sellingPrice
+                });
 
-                    selectCard(
-                        card,
-                        {
-                            type: "recharge",
-                            ...item
-                        }
-                    );
-
-                }
-            );
-
+            });
 
             grid.appendChild(card);
 

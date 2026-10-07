@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 
@@ -14,11 +13,13 @@ namespace diabot.Controllers
             _configuration = configuration;
         }
 
-        
+
         public IActionResult DiamondSelling()
         {
             return View();
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetPinnedMessage()
@@ -27,6 +28,7 @@ namespace diabot.Controllers
             {
 
                 var token = _configuration["Telegram:BotToken"];
+
                 var chatIdValue = _configuration["Telegram:ChatId"];
 
 
@@ -60,6 +62,7 @@ namespace diabot.Controllers
                 }
 
 
+
                 var bot = new TelegramBotClient(token);
 
                 var chat = await bot.GetChat(chatId);
@@ -90,11 +93,10 @@ namespace diabot.Controllers
                 }
 
 
-
                 var specialPackages = new List<object>();
 
 
-                // Weekly Pass
+
                 var weeklyMatch = Regex.Match(
                     text,
                     @"Weekly\s+Pass\s*[-=:]\s*([\d,]+)\s*Ks",
@@ -104,21 +106,31 @@ namespace diabot.Controllers
 
                 if (weeklyMatch.Success)
                 {
-                    decimal price = ParsePrice(
+                    decimal cost = ParsePrice(
                         weeklyMatch.Groups[1].Value
                     );
+
+
+                    decimal sellingPrice =
+                        GetPackageSellingPrice(
+                            "weekly",
+                            cost
+                        );
 
 
                     specialPackages.Add(new
                     {
                         Name = "Weekly Pass",
+
                         Type = "weekly",
-                        Price = price
+
+                        CostPrice = cost,
+
+                        SellingPrice = sellingPrice
                     });
                 }
 
 
-                // Monthly Epic Bundle
                 var monthlyMatch = Regex.Match(
                     text,
                     @"Monthly\s+Epic\s+Bundle\s*[-=:]\s*([\d,]+)\s*Ks",
@@ -128,21 +140,32 @@ namespace diabot.Controllers
 
                 if (monthlyMatch.Success)
                 {
-                    decimal price = ParsePrice(
+                    decimal cost = ParsePrice(
                         monthlyMatch.Groups[1].Value
                     );
+
+
+                    decimal sellingPrice =
+                        GetPackageSellingPrice(
+                            "monthly",
+                            cost
+                        );
 
 
                     specialPackages.Add(new
                     {
                         Name = "Monthly Epic Bundle",
+
                         Type = "monthly",
-                        Price = price
+
+                        CostPrice = cost,
+
+                        SellingPrice = sellingPrice
                     });
                 }
 
 
-                // Weekly Elite Bundle
+
                 var eliteMatch = Regex.Match(
                     text,
                     @"Weekly\s+Elite\s+Bundle\s*[-=:]\s*([\d,]+)\s*Ks",
@@ -152,16 +175,27 @@ namespace diabot.Controllers
 
                 if (eliteMatch.Success)
                 {
-                    decimal price = ParsePrice(
+                    decimal cost = ParsePrice(
                         eliteMatch.Groups[1].Value
                     );
+
+
+                    decimal sellingPrice =
+                        GetPackageSellingPrice(
+                            "elite",
+                            cost
+                        );
 
 
                     specialPackages.Add(new
                     {
                         Name = "Weekly Elite Bundle",
+
                         Type = "elite",
-                        Price = price
+
+                        CostPrice = cost,
+
+                        SellingPrice = sellingPrice
                     });
                 }
 
@@ -189,9 +223,16 @@ namespace diabot.Controllers
                     );
 
 
-                    decimal price = ParsePrice(
+                    decimal cost = ParsePrice(
                         match.Groups[3].Value
                     );
+
+
+                    decimal sellingPrice =
+                        GetRechargeSellingPrice(
+                            diamond,
+                            cost
+                        );
 
 
                     rechargeEvent.Add(new
@@ -204,11 +245,16 @@ namespace diabot.Controllers
 
                         Total = diamond + bonus,
 
-                        Price = price
+                        CostPrice = cost,
+
+                        SellingPrice = sellingPrice
                     });
                 }
 
 
+                // =====================================================
+                // NORMAL DIAMONDS
+                // =====================================================
 
                 var result = new List<object>();
 
@@ -227,32 +273,16 @@ namespace diabot.Controllers
                     );
 
 
-                    int cost = int.Parse(
-                        match.Groups[2].Value.Replace(",", "")
+                    decimal cost = ParsePrice(
+                        match.Groups[2].Value
                     );
 
 
-                    decimal sellingPrice;
-
-
-
-                    if (diamond <= 44)
-                    {
-                        sellingPrice = cost * 1.3333m;
-                    }
-                    else if (diamond <= 1000)
-                    {
-                        sellingPrice = cost * 1.68m;
-                    }
-                    else
-                    {
-                        sellingPrice = cost * 1.60m;
-                    }
-
-
-                    // Round UP to nearest 100
-                    sellingPrice =
-                        Math.Ceiling(sellingPrice / 100) * 100;
+                    decimal sellingPrice =
+                        GetDiamondSellingPrice(
+                            diamond,
+                            cost
+                        );
 
 
                     result.Add(new
@@ -266,6 +296,9 @@ namespace diabot.Controllers
                 }
 
 
+                // =====================================================
+                // JSON RESPONSE
+                // =====================================================
 
                 return Json(new
                 {
@@ -296,10 +329,196 @@ namespace diabot.Controllers
         }
 
 
+        // =====================================================
+        // SPECIAL PACKAGE SELLING PRICE
+        // =====================================================
+
+        private static decimal GetPackageSellingPrice(
+            string type,
+            decimal cost)
+        {
+            decimal markup;
+
+
+            switch (type.ToLower())
+            {
+                case "weekly":
+
+                    // 6700 -> approximately 6900
+
+                    markup = 0.02985m;
+
+                    break;
+
+
+                case "monthly":
+
+                    // 19000 -> approximately 19500
+
+                    markup = 0.02632m;
+
+                    break;
+
+
+                case "elite":
+
+                    // 3600 -> approximately 3700
+
+                    markup = 0.02778m;
+
+                    break;
+
+
+                default:
+
+                    markup = 0.03m;
+
+                    break;
+            }
+
+
+            decimal sellingPrice =
+                cost * (1 + markup);
+
+
+            return RoundUp100(sellingPrice);
+        }
+
+
+        // =====================================================
+        // 2X RECHARGE SELLING PRICE
+        // =====================================================
+
+        private static decimal GetRechargeSellingPrice(
+            int diamond,
+            decimal cost)
+        {
+            decimal markup;
+
+
+            /*
+             * Recharge ပမာဏနည်းရင်
+             * အနည်းငယ်ပိုမြင့်တဲ့ margin
+             *
+             * Recharge ပမာဏများရင်
+             * Competitive ဖြစ်အောင် margin လျှော့ထားခြင်း
+             */
+
+            if (diamond <= 50)
+            {
+                markup = 0.027m;
+            }
+            else if (diamond <= 150)
+            {
+                markup = 0.028m;
+            }
+            else if (diamond <= 250)
+            {
+                markup = 0.028m;
+            }
+            else
+            {
+                markup = 0.029m;
+            }
+
+
+            decimal sellingPrice =
+                cost * (1 + markup);
+
+
+            return RoundUp100(sellingPrice);
+        }
+
+
+        // =====================================================
+        // NORMAL DIAMOND SELLING PRICE
+        // =====================================================
+
+        private static decimal GetDiamondSellingPrice(
+            int diamond,
+            decimal cost)
+        {
+            decimal markup;
+
+
+            /*
+             * Small Diamond
+             */
+
+            if (diamond <= 100)
+            {
+                markup = 0.036m;
+            }
+
+
+            /*
+             * Medium Diamond
+             */
+
+            else if (diamond <= 600)
+            {
+                markup = 0.027m;
+            }
+
+
+            /*
+             * Large Diamond
+             */
+
+            else if (diamond <= 1000)
+            {
+                markup = 0.030m;
+            }
+
+
+            /*
+             * Very Large Diamond
+             */
+
+            else if (diamond <= 2500)
+            {
+                markup = 0.030m;
+            }
+
+
+            /*
+             * Huge Diamond
+             */
+
+            else
+            {
+                markup = 0.032m;
+            }
+
+
+            decimal sellingPrice =
+                cost * (1 + markup);
+
+
+            return RoundUp100(sellingPrice);
+        }
+
+
+        // =====================================================
+        // ROUND UP TO NEAREST 100 KS
+        // =====================================================
+
+        private static decimal RoundUp100(decimal price)
+        {
+            return Math.Ceiling(price / 100m) * 100m;
+        }
+
+
+        // =====================================================
+        // PARSE TELEGRAM PRICE
+        // =====================================================
+
         private static decimal ParsePrice(string value)
         {
             return decimal.Parse(
-                value.Replace(",", "").Trim()
+                value
+                    .Replace(",", "")
+                    .Trim()
             );
         }
     }
