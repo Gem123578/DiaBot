@@ -562,7 +562,7 @@ document
                 type: "success"
             });
 
-
+            resetOrderForm();
             // ==========================================
             // Reset Screenshot
             // ==========================================
@@ -934,4 +934,74 @@ document
     .classList.remove("show");
 
 
+}
+
+function resetOrderForm() {
+
+    // ==========================
+    // Clear Player ID / Server ID
+    // ==========================
+
+    const userIdInput = document.getElementById("userId");
+    const serverIdInput = document.getElementById("serverId");
+
+    if (userIdInput) {
+        userIdInput.value = "";
+    }
+
+    if (serverIdInput) {
+        serverIdInput.value = "";
+    }
+
+
+    // ==========================
+    // Remove selected card
+    // ==========================
+
+    document.querySelectorAll(".card.selected").forEach(card => {
+        card.classList.remove("selected");
+    });
+
+    selectedDiamond = null;
+
+
+    // ==========================
+    // Hide purchase bar
+    // ==========================
+
+    const purchaseBar =
+        document.getElementById("purchaseBar");
+
+    if (purchaseBar) {
+        purchaseBar.style.display = "none";
+    }
+
+
+    // ==========================
+    // Clear selected text
+    // ==========================
+
+    const selectedText =
+        document.getElementById("selectedText");
+
+    if (selectedText) {
+        selectedText.innerText = "";
+    }
+
+
+    // ==========================
+    // Clear current order
+    // ==========================
+
+    window.currentOrder = null;
+
+
+    // ==========================
+    // Reset payment method
+    // ==========================
+
+    selectedPaymentMethod = null;
+
+
+    console.log("Order form reset.");
 }
