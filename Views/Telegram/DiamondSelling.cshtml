@@ -194,10 +194,225 @@
 
         </div>      
         
-
+        
     </main>
-   
-   <script src="~/js/DiamondSelling.js"></script>
 
+    <!-- PAYMENT METHOD CHOOSE MODAL -->
+
+<div id="paymentMethodModal" class="payment-modal">
+
+<div class="payment-backdrop"></div>
+
+<div class="payment-box payment-method-box">
+
+    <button type="button"
+            class="payment-close"
+            onclick="closePaymentMethodModal()">
+        ×
+    </button>
+
+    <div class="payment-header">
+
+        <div class="payment-icon">
+            💳
+        </div>
+
+        <h2>Payment Method ရွေးပါ</h2>
+
+        <p>
+            ငွေပေးချေမည့် Payment ကို ရွေးပါ
+        </p>
+
+    </div>
+
+
+    <div class="payment-method-buttons">
+
+        <!-- KPay -->
+        <button type="button"
+                class="payment-method-select kpay"
+                onclick="choosePaymentMethod('KPay')">
+
+            <span class="payment-method-logo">
+                💚
+            </span>
+
+            <span class="payment-method-name">
+                KPay
+            </span>
+
+            <small>
+                KPay ဖြင့် ငွေလွှဲမည်
+            </small>
+
+        </button>
+
+
+        <!-- WavePay -->
+        <button type="button"
+                class="payment-method-select wavepay"
+                onclick="choosePaymentMethod('WavePay')">
+
+            <span class="payment-method-logo">
+                💙
+            </span>
+
+            <span class="payment-method-name">
+                WavePay
+            </span>
+
+            <small>
+                WavePay ဖြင့် ငွေလွှဲမည်
+            </small>
+
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+    <!-- PAYMENT MODAL -->
+    <div id="paymentModal" class="payment-modal">
+
+        <div class="payment-backdrop"></div>
+
+        <div class="payment-box">
+
+            <button type="button"
+                    class="payment-close"
+                    onclick="closePaymentModal()">
+                ×
+            </button>
+
+            <!-- Header -->
+            <div class="payment-header">
+
+                <div class="payment-icon">
+                    💳
+                </div>
+
+                <h2>Payment လုပ်မည်</h2>
+
+                <p>
+                    ငွေလွှဲပြီး Payment Screenshot တင်ပေးပါ
+                </p>
+
+            </div>
+
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+
+                <div class="summary-row">
+                    <span>Player ID</span>
+                    <strong id="paymentUserId">-</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Server ID</span>
+                    <strong id="paymentServerId">-</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Package</span>
+                    <strong id="paymentPackage">-</strong>
+                </div>
+
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <strong id="paymentPrice">0 Ks</strong>
+                </div>
+
+            </div>
+
+
+            <!-- QR -->
+
+<div class="qr-section"
+     id="qrSection"
+     style="display:none;">
+
+<div class="qr-title"
+     id="selectedPaymentTitle">
+    📱 Scan to Pay
+</div>
+
+
+<div class="qr-box">
+
+    <img id="paymentQr"
+         src=""
+         alt="Payment QR">
+
+</div>
+
+
+<div class="qr-price"
+     id="qrPrice">
+    0 Ks
+</div>
+
+
+<p class="qr-note">
+    QR ကို Scan ဖတ်ပြီး အထက်ပါ Amount အတိုင်း
+    ငွေလွှဲပေးပါ
+</p>
+
+</div>
+
+
+
+            <!-- Screenshot -->
+            <div class="upload-section">
+
+                <label class="upload-label">
+                    📸 Payment Screenshot
+                </label>
+
+                <label for="paymentScreenshot"
+                       class="upload-box">
+
+                    <div id="uploadPreview">
+
+                        <span class="upload-icon">
+                            📷
+                        </span>
+
+                        <span>
+                            Screenshot ရွေးရန်
+                        </span>
+
+                        <small>
+                            JPG / PNG
+                        </small>
+
+                    </div>
+
+                </label>
+
+                <input type="file"
+                       id="paymentScreenshot"
+                       accept="image/png,image/jpeg"
+                       hidden>
+                       
+            </div>
+
+
+            <!-- Submit -->
+            <button type="button"
+                    id="submitOrderButton"
+                    class="submit-order">
+
+                <span>✓</span>
+                ငွေလွှဲပြီး Order တင်မည်
+
+            </button>
+
+        </div>
+
+    </div>
+    <script src="~/js/DiamondSelling.js" asp-append-version="true"></script>
 </body>
 </html>

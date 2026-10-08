@@ -629,3 +629,671 @@ body {
         filter: drop-shadow(0 0 8px rgba(255, 120, 0, 0.7));
     }
 }
+
+
+/* ================================
+   PAYMENT MODAL
+================================ */
+.payment-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.payment-modal.show {
+    display: flex;
+}
+
+
+.payment-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .78);
+    backdrop-filter: blur(10px);
+    animation: paymentFade .25s ease;
+}
+
+
+.payment-box {
+    position: relative;
+    z-index: 2;
+    width: min(500px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 28px;
+    border-radius: 26px;
+    background: linear-gradient( 145deg, rgba(35, 25, 65, .97), rgba(10, 10, 25, .97) );
+    border: 1px solid rgba(183, 148, 255, .25);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, .7), 0 0 50px rgba(139, 92, 246, .15);
+    animation: paymentSlide .35s ease;
+}
+
+
+/* Close */
+
+.payment-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+    .payment-close:hover {
+        background: rgba(236,72,153,.25);
+        transform: rotate(90deg);
+    }
+
+
+/* Header */
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.payment-icon {
+    width: 65px;
+    height: 65px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    font-size: 32px;
+    background: linear-gradient( 135deg, rgba(139,92,246,.25), rgba(56,189,248,.15) );
+    box-shadow: 0 0 30px rgba(139,92,246,.25);
+}
+
+.payment-header h2 {
+    margin: 15px 0 5px;
+    font-size: 25px;
+}
+
+.payment-header p {
+    margin: 0;
+    color: rgba(255,255,255,.55);
+    font-size: 13px;
+}
+
+
+/* Summary */
+
+.order-summary {
+    padding: 16px;
+    border-radius: 17px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 14px;
+    color: rgba(255,255,255,.6);
+}
+
+    .summary-row strong {
+        color: white;
+    }
+
+    .summary-row.total {
+        margin-top: 7px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,.1);
+        font-size: 16px;
+    }
+
+        .summary-row.total strong {
+            color: #b794ff;
+            font-size: 20px;
+        }
+
+
+/* QR */
+
+.qr-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.qr-title {
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.qr-box {
+    width: 220px;
+    height: 220px;
+    margin: auto;
+    padding: 10px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 0 35px rgba(255,255,255,.12);
+}
+
+    .qr-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+.qr-price {
+    margin-top: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #b794ff;
+}
+
+.qr-note {
+    margin: 8px auto 0;
+    max-width: 350px;
+    color: rgba(255,255,255,.5);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+/* Upload */
+
+.upload-section {
+    margin-top: 20px;
+}
+
+.upload-label {
+    display: block;
+    margin-bottom: 9px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.upload-box {
+    display: block;
+    padding: 18px;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px dashed rgba(183,148,255,.45);
+    background: rgba(139,92,246,.06);
+    cursor: pointer;
+    transition: .25s;
+}
+
+    .upload-box:hover {
+        background: rgba(139,92,246,.12);
+        border-color: #b794ff;
+        transform: translateY(-2px);
+    }
+
+#uploadPreview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.upload-icon {
+    font-size: 30px;
+}
+
+#uploadPreview small {
+    color: rgba(255,255,255,.4);
+}
+
+
+/* Preview image */
+
+.payment-preview {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+
+/* Submit */
+
+.submit-order {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    border: 0;
+    border-radius: 15px;
+    background: linear-gradient( 135deg, #8b5cf6, #ec4899 );
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(139,92,246,.25);
+    transition: .25s;
+}
+
+    .submit-order:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(139,92,246,.4);
+    }
+
+    .submit-order:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+
+/* Animation */
+
+@keyframes paymentFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes paymentSlide {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .payment-box {
+        padding: 22px;
+        border-radius: 22px;
+    }
+
+    .qr-box {
+        width: 190px;
+        height: 190px;
+    }
+
+    .payment-header h2 {
+        font-size: 21px;
+    }
+}
+
+.payment-method-box {
+    max-width: 420px;
+}
+
+.payment-method-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.payment-method-select {
+    width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 15px;
+    padding: 18px;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.2s ease;
+
+}
+
+    .payment-method-select:hover {
+        transform: translateY(-2px);
+    }
+
+    .payment-method-select.kpay:hover {
+        border-color: #20b95c;
+    }
+
+    .payment-method-select.wavepay:hover {
+        border-color: #168cff;
+    }
+
+.payment-method-logo {
+    font-size: 32px;
+}
+
+.payment-method-name {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.payment-method-select small {
+    margin-left: auto;
+    color: #777;
+}
+
+#qrSection {
+    animation: paymentQrShow 0.3s ease;
+}
+
+@keyframes paymentQrShow {
+ from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+/* ==========================================
+MOBILE CARD - COMPACT DESIGN
+========================================== */
+
+@media (max-width: 600px) {
+
+    .diamond-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .card {
+        min-height: 115px;
+        padding: 11px;
+        border-radius: 15px;
+    }
+
+    .diamond-icon {
+        width: 42px;
+        height: 42px;
+        margin: 0 auto 8px;
+        font-size: 25px;
+        border-radius: 50%;
+    }
+
+    .diamond-count {
+        font-size: 13px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .diamond-label {
+        font-size: 9px;
+        text-align: center;
+        margin-top: 2px;
+    }
+
+    .price {
+        position: static;
+        margin-top: 7px;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .card.selected {
+        transform: translateY(-3px) scale(1.01);
+    }
+
+    .card:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
+
+    .card.selected::after {
+        width: 20px;
+        height: 20px;
+        top: 6px;
+        right: 6px;
+        font-size: 11px;
+    }
+
+   
+}
+
+/* ==========================================
+VERY SMALL PHONE
+========================================== */
+
+@media (max-width: 380px) {
+
+  
+    .diamond-grid {
+        gap: 7px;
+    }
+
+    .card {
+        min-height: 105px;
+        padding: 9px;
+        border-radius: 13px;
+    }
+
+    .diamond-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+
+    .diamond-count {
+        font-size: 12px;
+    }
+
+    .diamond-label {
+        font-size: 8px;
+    }
+
+    .price {
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    .card.selected::after {
+        width: 18px;
+        height: 18px;
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+    }
+
+}
+
+/* ==========================================
+   COMPACT CARD DESIGN - ALL DEVICES
+========================================== */
+
+.diamond-grid {
+    gap: 12px;
+}
+
+/* Desktop */
+.card {
+    min-height: 125px;
+    padding: 13px;
+    border-radius: 17px;
+}
+
+.diamond-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 7px;
+    font-size: 28px;
+    border-radius: 50%;
+}
+
+.diamond-count {
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.diamond-label {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+.price {
+    position: static;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.card.selected {
+    transform: translateY(-3px) scale(1.01);
+}
+
+.card:hover {
+    transform: translateY(-3px) scale(1.01);
+}
+
+.card.selected::after {
+    width: 20px;
+    height: 20px;
+    top: 6px;
+    right: 6px;
+    font-size: 11px;
+}
+
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 900px) {
+
+    .diamond-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .card {
+        min-height: 118px;
+        padding: 11px;
+    }
+
+    .diamond-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 26px;
+        margin-bottom: 6px;
+    }
+
+    .diamond-count {
+        font-size: 13px;
+    }
+
+    .diamond-label {
+        font-size: 9px;
+    }
+
+    .price {
+        font-size: 11px;
+        margin-top: 5px;
+    }
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+    .diamond-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .card {
+        min-height: 108px;
+        padding: 9px;
+        border-radius: 14px;
+    }
+
+    .diamond-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 23px;
+        margin-bottom: 5px;
+    }
+
+    .diamond-count {
+        font-size: 12px;
+    }
+
+    .diamond-label {
+        font-size: 8px;
+    }
+
+    .price {
+        font-size: 10px;
+        margin-top: 5px;
+    }
+
+    .card.selected::after {
+        width: 18px;
+        height: 18px;
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+    }
+}
+
+
+/* ==========================================
+   SMALL PHONE
+========================================== */
+
+@media (max-width: 380px) {
+
+    .diamond-grid {
+        gap: 6px;
+    }
+
+    .card {
+        min-height: 98px;
+        padding: 8px;
+        border-radius: 12px;
+    }
+
+    .diamond-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .diamond-count {
+        font-size: 11px;
+    }
+
+    .diamond-label {
+        font-size: 7px;
+    }
+
+    .price {
+        font-size: 9px;
+        margin-top: 4px;
+    }
+}
