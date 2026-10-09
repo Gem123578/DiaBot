@@ -208,8 +208,13 @@ function loadRechargePackages(data) {
                 </div>
 
                 <div class="diamond-label">
-                    ${item.total} Diamond Total<span>ပထမဆုံး ဝယ်ယူမှုအတွက် 2X Bonus ကို တစ်ကြိမ်သာ ရရှိနိုင်ပါသည်။</span>
-                </div>
+        ${item.total} Diamond Total
+    </div>
+
+    <div class="bonus-note">
+        🎁 ပထမဆုံးဝယ်ယူမှုအတွက် 2X Bonus ကို
+        တစ်ကြိမ်သာ ရရှိနိုင်ပါသည်။
+    </div>
 
                 <div class="price">
                     ${Number(item.sellingPrice).toLocaleString()} Ks

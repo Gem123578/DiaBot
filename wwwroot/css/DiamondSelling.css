@@ -1297,3 +1297,11 @@ VERY SMALL PHONE
         margin-top: 4px;
     }
 }
+.bonus-note {
+    font-size: 12px;
+    color: #ffb74d;
+    line-height: 1.6;
+    text-align: center;
+    margin: 8px 4px;
+    font-weight: 500;
+}
