@@ -1,22 +1,33 @@
 ﻿using diabot.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using System.Text.RegularExpressions;
 using Tesseract;
+using static diabot.Services.PaymentOcrServices;
 
 namespace diabot.Controllers
 {
     public class TelegramController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly PaymentOcrService _ocrService;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<TelegramController> _logger;
 
-        public TelegramController(IConfiguration configuration , IWebHostEnvironment environment)
+
+        public TelegramController(IConfiguration configuration, ILogger<TelegramController> logger, IWebHostEnvironment environment)
         {
+            _logger = logger;
             _configuration = configuration;
-            _environment = environment;
+            string tessDataPath = Path.Combine(
+               environment.ContentRootPath,
+               "tessdata"
+           );
+
+            _ocrService = new PaymentOcrService(tessDataPath);
         }
 
 
@@ -333,67 +344,331 @@ namespace diabot.Controllers
                 });
             }
         }
+        //        [HttpPost]
+        //        public async Task<IActionResult> SubmitOrder(
+        //            [FromForm] PurchaseRequest request,
+        //            IFormFile? paymentScreenshot)
+        //        {
+        //            try
+        //            {
+        //                // ==========================================
+        //                // 1. Validate Order
+        //                // ==========================================
+
+        //                if (request == null)
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Order data မရရှိပါ။"
+        //                    });
+        //                }
+
+        //                if (string.IsNullOrWhiteSpace(request.UserId))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Player ID ထည့်ပေးပါ။"
+        //                    });
+        //                }
+
+        //                if (string.IsNullOrWhiteSpace(request.ServerId))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Server ID ထည့်ပေးပါ။"
+        //                    });
+        //                }
+
+        //                if (string.IsNullOrWhiteSpace(request.PackageName))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Package ရွေးပေးပါ။"
+        //                    });
+        //                }
+
+        //                if (request.SellingPrice <= 0)
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Price မမှန်ပါ။"
+        //                    });
+        //                }
+
+
+        //                // ==========================================
+        //                // 2. Validate Screenshot
+        //                // ==========================================
+
+        //                if (paymentScreenshot == null ||
+        //                    paymentScreenshot.Length == 0)
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Payment Screenshot တင်ပေးပါ။"
+        //                    });
+        //                }
+
+        //                const long maxFileSize = 5 * 1024 * 1024;
+
+        //                if (paymentScreenshot.Length > maxFileSize)
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Screenshot size သည် 5MB ထက်မကျော်ရပါ။"
+        //                    });
+        //                }
+
+        //                var allowedTypes = new[]
+        //                {
+        //            "image/jpeg",
+        //            "image/png",
+        //            "image/webp"
+        //        };
+
+        //                var contentType =
+        //                    paymentScreenshot.ContentType
+        //                        ?.ToLowerInvariant();
+
+        //                if (string.IsNullOrWhiteSpace(contentType) ||
+        //                    !allowedTypes.Contains(contentType))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message =
+        //                            "JPG, PNG သို့မဟုတ် WEBP image သာတင်နိုင်ပါသည်။"
+        //                    });
+        //                }
+
+
+        //                // ==========================================
+        //                // 3. Telegram Configuration
+        //                // ==========================================
+
+        //                var token =
+        //                    _configuration["Telegram:BotToken"];
+
+        //                var chatIdValue =
+        //                    _configuration["Telegram:ChatId"];
+
+        //                if (string.IsNullOrWhiteSpace(token))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Telegram BotToken is missing."
+        //                    });
+        //                }
+
+        //                if (string.IsNullOrWhiteSpace(chatIdValue))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Telegram ChatId is missing."
+        //                    });
+        //                }
+
+        //                if (!long.TryParse(
+        //                        chatIdValue,
+        //                        out long chatId))
+        //                {
+        //                    return BadRequest(new
+        //                    {
+        //                        success = false,
+        //                        message = "Telegram ChatId is invalid."
+        //                    });
+        //                }
+
+
+        //                // ==========================================
+        //                // 4. Telegram Bot
+        //                // ==========================================
+
+        //                var bot =
+        //                    new TelegramBotClient(token);
+
+
+        //                // ==========================================
+        //                // 5. HTML Safe Values
+        //                // ==========================================
+
+        //                var safeUserId =
+        //                    System.Net.WebUtility.HtmlEncode(
+        //                        request.UserId);
+
+        //                var safeServerId =
+        //                    System.Net.WebUtility.HtmlEncode(
+        //                        request.ServerId);
+
+        //                var safePackage =
+        //                    System.Net.WebUtility.HtmlEncode(
+        //                        request.PackageName);
+
+        //                var safeDiamond =
+        //                    System.Net.WebUtility.HtmlEncode(
+        //                        request.Diamond ?? "");
+
+        //                var paymentMethod =
+        //                    string.IsNullOrWhiteSpace(
+        //                        request.PaymentMethod)
+        //                        ? "QR Payment"
+        //                        : request.PaymentMethod;
+
+        //                var safePayment =
+        //                    System.Net.WebUtility.HtmlEncode(
+        //                        paymentMethod);
+
+
+        //                // ==========================================
+        //                // 6. Create Order Message
+        //                // ==========================================
+
+        //                var message = $"""
+        //🛒 <b>NEW DIAMOND ORDER</b>
+
+        //👤 <b>Player ID:</b>
+        //<code>{safeUserId}</code>
+
+        //🖥️ <b>Server ID:</b>
+        //<code>{safeServerId}</code>
+
+        //📦 <b>Package:</b>
+        //{safePackage}
+
+        //💎 <b>Diamond:</b>
+        //{safeDiamond}
+
+        //💰 <b>Price:</b>
+        //<b>{request.SellingPrice:N0} Ks</b>
+
+        //💳 <b>Payment:</b>
+        //{safePayment}
+
+        //⏰ <b>Time:</b>
+        //{DateTime.Now:yyyy-MM-dd HH:mm:ss}
+
+        //📸 <b>Payment Screenshot attached below.</b>
+        //""";
+
+
+        //                // ==========================================
+        //                // 7. Send Order Text
+        //                // ==========================================
+
+        //                await bot.SendMessage(
+        //                    chatId: chatId,
+        //                    text: message,
+        //                    parseMode: ParseMode.Html
+        //                );
+
+
+        //                // ==========================================
+        //                // 8. Send Payment Screenshot
+        //                // ==========================================
+
+        //                await using var stream =
+        //                    paymentScreenshot.OpenReadStream();
+
+        //                var telegramFile =
+        //                    InputFile.FromStream(
+        //                        stream,
+        //                        paymentScreenshot.FileName
+        //                    );
+
+        //                await bot.SendPhoto(
+        //                    chatId: chatId,
+        //                    photo: telegramFile,
+        //                    caption:
+        //                        $"📸 <b>Payment Proof</b>\n\n" +
+        //                        $"👤 Player ID: <code>{safeUserId}</code>\n" +
+        //                        $"🖥️ Server ID: <code>{safeServerId}</code>\n" +
+        //                        $"💰 Amount: <b>{request.SellingPrice:N0} Ks</b>",
+        //                    parseMode: ParseMode.Html
+        //                );
+
+
+        //                // ==========================================
+        //                // 9. Success
+        //                // ==========================================
+
+        //                return Json(new
+        //                {
+        //                    success = true,
+        //                    message =
+        //                        "Order နှင့် Payment Screenshot ကို Seller ဆီသို့ ပို့ပြီးပါပြီ။"
+        //                });
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine(
+        //                    $"SubmitOrder Error: {ex}");
+
+        //                return StatusCode(500, new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "Order ပို့ရာတွင် အမှားရှိပါသည်။",
+        //                    error = ex.Message,
+        //                    innerError =
+        //                        ex.InnerException?.Message
+        //                });
+        //            }
+        //        }
+
         [HttpPost]
+        [Route("Telegram/SubmitOrder")]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> SubmitOrder(
-            [FromForm] PurchaseRequest request,
-            IFormFile? paymentScreenshot)
+            [FromForm] string UserId,
+            [FromForm] string ServerId,
+            [FromForm] string PackageName,
+            [FromForm] int Diamond,
+            [FromForm] decimal SellingPrice,
+            [FromForm] string PaymentMethod,
+            [FromForm] IFormFile paymentScreenshot)
         {
             try
             {
-                // ==========================================
-                // 1. Validate Order
-                // ==========================================
-
-                if (request == null)
+                // 1. Required fields စစ်ပါ
+                if (string.IsNullOrWhiteSpace(UserId) ||
+                    string.IsNullOrWhiteSpace(ServerId) ||
+                    string.IsNullOrWhiteSpace(PackageName))
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Order data မရရှိပါ။"
+                        message = "Order အချက်အလက်များ မပြည့်စုံပါ။"
                     });
                 }
 
-                if (string.IsNullOrWhiteSpace(request.UserId))
+                // 2. Payment Method စစ်ပါ
+                PaymentMethod = (PaymentMethod ?? "").Trim();
+
+                if (!PaymentMethod.Equals(
+                        "KPay",
+                        StringComparison.OrdinalIgnoreCase) &&
+                    !PaymentMethod.Equals(
+                        "WavePay",
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Player ID ထည့်ပေးပါ။"
+                        message = "Payment Method မမှန်ကန်ပါ။"
                     });
                 }
 
-                if (string.IsNullOrWhiteSpace(request.ServerId))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Server ID ထည့်ပေးပါ။"
-                    });
-                }
-
-                if (string.IsNullOrWhiteSpace(request.PackageName))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Package ရွေးပေးပါ။"
-                    });
-                }
-
-                if (request.SellingPrice <= 0)
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Price မမှန်ပါ။"
-                    });
-                }
-
-
-                // ==========================================
-                // 2. Validate Screenshot
-                // ==========================================
-
+                // 3. Screenshot ရှိ/မရှိနှင့် အရွယ်အစား စစ်ပါ
                 if (paymentScreenshot == null ||
                     paymentScreenshot.Length == 0)
                 {
@@ -404,125 +679,123 @@ namespace diabot.Controllers
                     });
                 }
 
-                const long maxFileSize = 5 * 1024 * 1024;
-
-                if (paymentScreenshot.Length > maxFileSize)
+                if (paymentScreenshot.Length > 5 * 1024 * 1024)
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Screenshot size သည် 5MB ထက်မကျော်ရပါ။"
+                        message = "Screenshot သည် 5MB ထက် မကျော်ရပါ။"
                     });
                 }
 
+                // ContentType ကို တစ်ခုတည်း ယုံကြည်ပြီး မဆုံးဖြတ်ပါနှင့်။
                 var allowedTypes = new[]
                 {
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        };
+                    "image/jpeg",
+                    "image/png"
+                };
 
-                var contentType =
-                    paymentScreenshot.ContentType
-                        ?.ToLowerInvariant();
-
-                if (string.IsNullOrWhiteSpace(contentType) ||
-                    !allowedTypes.Contains(contentType))
+                if (!allowedTypes.Contains(
+                    paymentScreenshot.ContentType?.ToLowerInvariant()))
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message =
-                            "JPG, PNG သို့မဟုတ် WEBP image သာတင်နိုင်ပါသည်။"
+                        message = "JPG သို့မဟုတ် PNG Screenshot ကိုသာ တင်ပါ။"
                     });
                 }
 
+                // 4. Screenshot bytes ဖတ်ပါ
+                byte[] imageBytes;
 
-                // ==========================================
-                // 3. Telegram Configuration
-                // ==========================================
+                using (var ms = new MemoryStream())
+                {
+                    await paymentScreenshot.CopyToAsync(ms);
+                    imageBytes = ms.ToArray();
+                }
 
-                var token =
-                    _configuration["Telegram:BotToken"];
+                // 5. OCR ကို Server-side မှာ လုပ်ဆောင်ပါ
+                var ocrResult = await _ocrService.ReadScreenshotAsync(
+                    imageBytes,
+                    PaymentMethod
+                );
+                _logger.LogInformation(
+    "OCR Success: {Success}, WalletDetected: {WalletDetected}, " +
+    "DetectedWallet: {DetectedWallet}, ExtractedText: {ExtractedText}",
+    ocrResult.Success,
+    ocrResult.WalletDetected,
+    ocrResult.DetectedWallet,
+    ocrResult.ExtractedText
+);
 
-                var chatIdValue =
-                    _configuration["Telegram:ChatId"];
-
-                if (string.IsNullOrWhiteSpace(token))
+                if (!ocrResult.WalletDetected)
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Telegram BotToken is missing."
+                        message = ocrResult.ErrorMessage ??
+                                  "Payment Screenshot မှားယွင်း နေပါ သည်"
                     });
                 }
 
-                if (string.IsNullOrWhiteSpace(chatIdValue))
+                // 6. Wallet စာသားတွေ့/မတွေ့ မှတ်တမ်းယူပါ။
+                // တွေ့တယ်ဆိုတာ ငွေပေးချေပြီးကြောင်း အတည်ပြုချက် မဟုတ်ပါ။
+                string reviewReason = ocrResult.WalletDetected
+                    ? "OCR wallet keyword detected; payment not verified"
+                    : "Wallet keyword not detected; manual review required";
+
+                
+
+                _logger.LogInformation(
+                    "Payment OCR review created for UserId {UserId}. " +
+                    "Method: {PaymentMethod}; WalletDetected: {WalletDetected}",
+                    UserId,
+                    PaymentMethod,
+                    ocrResult.WalletDetected
+                );
+
+                // 9. Screenshot ကို OCR ဖတ်ပြီးပါပြီ။
+                // Database persistence ကို အထက်ပါနေရာမှာ အမှန်တကယ်
+                // ချိတ်ပြီးမှ ဒီ response ကို production မှာ အသုံးပြုပါ။
+                var botToken = _configuration["Telegram:BotToken"];
+                var chatIdValue = _configuration["Telegram:ChatId"];
+
+                if (string.IsNullOrWhiteSpace(botToken) ||
+                    string.IsNullOrWhiteSpace(chatIdValue) ||
+                    !long.TryParse(chatIdValue, out long chatId))
                 {
-                    return BadRequest(new
+                    _logger.LogError("Telegram BotToken or ChatId is missing/invalid.");
+
+                    return StatusCode(500, new
                     {
                         success = false,
-                        message = "Telegram ChatId is missing."
+                        message = "Telegram Bot Configuration မမှန်ကန်ပါ။"
                     });
                 }
 
-                if (!long.TryParse(
-                        chatIdValue,
-                        out long chatId))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Telegram ChatId is invalid."
-                    });
-                }
-
-
                 // ==========================================
-                // 4. Telegram Bot
+                // 8. Create Telegram Bot
                 // ==========================================
 
-                var bot =
-                    new TelegramBotClient(token);
+                var bot = new TelegramBotClient(botToken);
 
-
-                // ==========================================
-                // 5. HTML Safe Values
-                // ==========================================
-
-                var safeUserId =
-                    System.Net.WebUtility.HtmlEncode(
-                        request.UserId);
-
-                var safeServerId =
-                    System.Net.WebUtility.HtmlEncode(
-                        request.ServerId);
-
-                var safePackage =
-                    System.Net.WebUtility.HtmlEncode(
-                        request.PackageName);
-
-                var safeDiamond =
-                    System.Net.WebUtility.HtmlEncode(
-                        request.Diamond ?? "");
-
-                var paymentMethod =
-                    string.IsNullOrWhiteSpace(
-                        request.PaymentMethod)
-                        ? "QR Payment"
-                        : request.PaymentMethod;
-
-                var safePayment =
-                    System.Net.WebUtility.HtmlEncode(
-                        paymentMethod);
-
+                // Telegram HTML ထဲမှာ ထည့်မယ့် user data တွေကို encode လုပ်ပါ။
+                var safeUserId = System.Net.WebUtility.HtmlEncode(UserId);
+                var safeServerId = System.Net.WebUtility.HtmlEncode(ServerId);
+                var safePackage = System.Net.WebUtility.HtmlEncode(PackageName);
+                var safePayment = System.Net.WebUtility.HtmlEncode(PaymentMethod);
+                var safeDiamond = System.Net.WebUtility.HtmlEncode(
+                    Diamond > 0 ? Diamond.ToString("N0") : "N/A"
+                );
 
                 // ==========================================
-                // 6. Create Order Message
+                // 9. Create Telegram Order Message
                 // ==========================================
 
                 var message = $"""
 🛒 <b>NEW DIAMOND ORDER</b>
+
+📌 <b>Status:</b> PENDING REVIEW
 
 👤 <b>Player ID:</b>
 <code>{safeUserId}</code>
@@ -537,20 +810,22 @@ namespace diabot.Controllers
 {safeDiamond}
 
 💰 <b>Price:</b>
-<b>{request.SellingPrice:N0} Ks</b>
+<b>{SellingPrice:N0} Ks</b>
 
 💳 <b>Payment:</b>
 {safePayment}
 
+🔎 <b>OCR Wallet:</b>
+{System.Net.WebUtility.HtmlEncode(ocrResult.DetectedWallet ?? "Not specified")}
+
 ⏰ <b>Time:</b>
 {DateTime.Now:yyyy-MM-dd HH:mm:ss}
 
-📸 <b>Payment Screenshot attached below.</b>
+⚠️ <b>Admin must verify the actual payment.</b>
 """;
 
-
                 // ==========================================
-                // 7. Send Order Text
+                // 10. Send Order Text to Telegram
                 // ==========================================
 
                 await bot.SendMessage(
@@ -559,56 +834,57 @@ namespace diabot.Controllers
                     parseMode: ParseMode.Html
                 );
 
-
                 // ==========================================
-                // 8. Send Payment Screenshot
+                // 11. Send Payment Screenshot to Telegram
                 // ==========================================
 
-                await using var stream =
-                    paymentScreenshot.OpenReadStream();
-
-                var telegramFile =
-                    InputFile.FromStream(
-                        stream,
-                        paymentScreenshot.FileName
+                await using (var photoStream = new MemoryStream(imageBytes))
+                {
+                    var telegramFile = InputFile.FromStream(
+                        photoStream,
+                        Path.GetFileName(paymentScreenshot.FileName)
                     );
 
-                await bot.SendPhoto(
-                    chatId: chatId,
-                    photo: telegramFile,
-                    caption:
-                        $"📸 <b>Payment Proof</b>\n\n" +
-                        $"👤 Player ID: <code>{safeUserId}</code>\n" +
-                        $"🖥️ Server ID: <code>{safeServerId}</code>\n" +
-                        $"💰 Amount: <b>{request.SellingPrice:N0} Ks</b>",
-                    parseMode: ParseMode.Html
-                );
+                    var caption = $"""
+📸 <b>PAYMENT SCREENSHOT</b>
 
+👤 Player ID: <code>{safeUserId}</code>
+🖥️ Server ID: <code>{safeServerId}</code>
+📦 Package: {safePackage}
+💰 Amount: <b>{SellingPrice:N0} Ks</b>
+💳 Payment: {safePayment}
+
+⚠️ <b>Status: PENDING REVIEW</b>
+""";
+
+                    await bot.SendPhoto(
+                        chatId: chatId,
+                        photo: telegramFile,
+                        caption: caption,
+                        parseMode: ParseMode.Html
+                    );
+                }
 
                 // ==========================================
-                // 9. Success
+                // 12. Return Success to JavaScript
                 // ==========================================
 
-                return Json(new
+                return Ok(new
                 {
                     success = true,
-                    message =
-                        "Order နှင့် Payment Screenshot ကို Seller ဆီသို့ ပို့ပြီးပါပြီ။"
+                    status = "PendingReview",
+                    message = "Order နှင့် Payment Screenshot ကို Seller ဆီသို့ ပို့ပြီးပါပြီ။",
+                    walletDetected = ocrResult.WalletDetected
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    $"SubmitOrder Error: {ex}");
+                _logger.LogError(ex, "SubmitOrder failed.");
 
                 return StatusCode(500, new
                 {
                     success = false,
-                    message =
-                        "Order ပို့ရာတွင် အမှားရှိပါသည်။",
-                    error = ex.Message,
-                    innerError =
-                        ex.InnerException?.Message
+                    message = "Order ပို့ရာတွင် အမှားဖြစ်နေပါသည်။"
                 });
             }
         }

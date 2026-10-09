@@ -121,8 +121,13 @@ function loadSpecialPackages(data) {
             else if (item.type === "elite") {
                 icon = "🔥";
             }
+            let packageDescription = "အထူး Package";
 
-
+            if (item.type === "monthly") {
+                packageDescription = "တစ်လတစ်ခါ ဝယ်လို့ရ";
+            } else if (item.type === "elite") {
+                packageDescription = "တစ်ပတ်တစ်ခါ ဝယ်လို့ရ";
+            } 
             // CARD HTML
             card.innerHTML = `
     <div class="diamond-icon" >
@@ -134,8 +139,8 @@ function loadSpecialPackages(data) {
                 </div>
 
                 <div class="diamond-label">
-                    အထူး Package
-                </div>
+            ${packageDescription}
+        </div>
 
                 <div class="price">
                     ${Number(item.sellingPrice).toLocaleString()} Ks
@@ -203,7 +208,7 @@ function loadRechargePackages(data) {
                 </div>
 
                 <div class="diamond-label">
-                    ${item.total} Diamond Total
+                    ${item.total} Diamond Total<span>ပထမဆုံး ဝယ်ယူမှုအတွက် 2X Bonus ကို တစ်ကြိမ်သာ ရရှိနိုင်ပါသည်။</span>
                 </div>
 
                 <div class="price">
@@ -395,207 +400,443 @@ async function loadDiamondPrices() {
     }
 }
 
+async function submitDiamondOrder(order) {
+    const fileInput = document.getElementById("paymentScreenshot");
+    const file = fileInput?.files?.[0];
 
+    if (!file) {
+        alert("Payment Screenshot တင်ပေးပါ။");
+        return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png"];
+
+    if (!allowedTypes.includes(file.type)) {
+        alert("JPG သို့မဟုတ် PNG Screenshot ကိုသာ တင်ပါ။");
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert("Screenshot သည် 5MB ထက် မကျော်ရပါ။");
+        return;
+    }
+
+    const token = document.querySelector(
+        '#antiForgeryForm input[name="__RequestVerificationToken"]'
+    )?.value;
+
+    if (!token) {
+        alert("Security token မတွေ့ပါ။ Page ကို Refresh လုပ်ပြီး ပြန်စမ်းပါ။");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("UserId", order.UserId);
+    formData.append("ServerId", order.ServerId);
+    formData.append("PackageName", order.PackageName);
+    formData.append("Diamond", String(order.Diamond));
+    formData.append("SellingPrice", String(order.SellingPrice));
+    formData.append("PaymentMethod", order.PaymentMethod);
+    formData.append("paymentScreenshot", file);
+
+    try {
+        const response = await fetch("/Telegram/SubmitOrder", {
+            method: "POST",
+            headers: {
+                "RequestVerificationToken": token
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            alert(result.message || "Order ပို့လို့မရပါ။");
+            return;
+        }
+
+        if (result.status === "PendingReview") {
+            alert(
+                "Order လက်ခံရရှိပါပြီ။ " +
+                "Admin မှ ငွေပေးချေမှုကို စစ်ဆေးပြီးမှ အတည်ပြုပါမည်။"
+            );
+        }
+    } catch (error) {
+        console.error("SubmitOrder error:", error);
+        alert("Server နဲ့ ဆက်သွယ်လို့မရပါ။ နောက်တစ်ကြိမ် ပြန်စမ်းပါ။");
+    }
+}
+
+//document
+//    .getElementById("submitOrderButton")
+//    .addEventListener("click", async function () {
+
+
+//        if (!window.currentOrder) {
+
+//            showAppAlert({
+//                title: "Error",
+//                message: "Order information မတွေ့ပါ။",
+//                type: "error"
+//            });
+
+//            return;
+//        }
+
+
+
+//        const fileInput =
+//            document.getElementById("paymentScreenshot");
+
+//        const file =
+//            fileInput.files[0];
+
+//        if (!file) {
+
+//            showAppAlert({
+//                title: "Warning",
+//                message: "Payment Screenshot တင်ပေးပါ။",
+//                type: "warning"
+//            });
+
+//            return;
+//        }
+
+
+
+//        const button = this;
+
+//        const oldText =
+//            button.innerHTML;
+
+//        button.disabled = true;
+
+//        button.innerHTML =
+//            "⏳ Order ပို့နေပါသည်...";
+
+
+//        try {
+
+
+//            const formData =
+//                new FormData();
+
+//            formData.append(
+//                "UserId",
+//                window.currentOrder.userId
+//            );
+
+
+
+//            formData.append(
+//                "ServerId",
+//                window.currentOrder.serverId
+//            );
+
+
+
+//            formData.append(
+//                "PackageName",
+//                window.currentOrder.packageName
+//            );
+
+//            formData.append(
+//                "Diamond",
+//                window.currentOrder.diamond
+//            );
+
+//            formData.append(
+//                "SellingPrice",
+//                window.currentOrder.sellingPrice
+//            );
+
+//            if (!selectedPaymentMethod) {
+
+//                showAppAlert({
+//                    title: "Warning",
+//                    message: "KPay သို့မဟုတ် WavePay ကို ရွေးပေးပါ။",
+//                    type: "warning"
+//                });
+
+//                return;
+
+//            }
+
+//            formData.append(
+//                "PaymentMethod",
+//                selectedPaymentMethod
+//            );
+
+//            formData.append(
+//                "paymentScreenshot",
+//                file
+//            );
+
+
+
+//            const response =
+//                await fetch(
+//                    "/Telegram/SubmitOrder",
+//                    {
+//                        method: "POST",
+//                        body: formData
+//                    }
+//                );
+
+
+//            const result =
+//                await response.json();
+
+
+//            if (!response.ok ||
+//                !result.success) {
+
+//                throw new Error(
+//                    result.message ||
+//                    "Order ပို့၍မရပါ။"
+//                );
+//            }
+
+
+
+//            closePaymentModal();
+
+
+//            showAppAlert({
+//                title: "Order Submitted",
+//                message:
+//                    "Order နှင့် Payment Screenshot ကို Seller ဆီသို့ ပို့ပြီးပါပြီ။ ကျေးဇူးတင်ပါတယ်။",
+//                type: "success"
+//            });
+
+//            resetOrderForm();
+
+//            fileInput.value = "";
+
+//            document
+//                .getElementById("uploadPreview")
+//                .innerHTML = `
+//                    <span class="upload-icon">
+//                        📷
+//                    </span>
+
+//                    <span>
+//                        Screenshot ရွေးရန်
+//                    </span>
+
+//                    <small>
+//                        JPG / PNG
+//                    </small>
+//                `;
+
+
+
+//            window.currentOrder = null;
+
+//        }
+//        catch (error) {
+
+//            console.error(
+//                "Submit Order Error:",
+//                error
+//            );
+
+//            showAppAlert({
+//                title: "Error",
+//                message:
+//                    error.message ||
+//                    "Order ပို့ရာတွင် အမှားရှိပါသည်။",
+//                type: "error"
+//            });
+//        }
+//        finally {
+
+//            button.disabled = false;
+
+//            button.innerHTML =
+//                oldText;
+//        }
+//    });
 
 document
     .getElementById("submitOrderButton")
     .addEventListener("click", async function () {
 
-        // ==========================================
-        // Check Current Order
-        // ==========================================
+        const button = this;
 
-        if (!window.currentOrder) {
+        // 1. Order ရှိ/မရှိ စစ်ပါ
+        const order = window.currentOrder;
 
+        if (!order) {
             showAppAlert({
                 title: "Error",
                 message: "Order information မတွေ့ပါ။",
                 type: "error"
             });
-
             return;
         }
 
+        // 2. Payment Method စစ်ပါ
+        if (
+            selectedPaymentMethod !== "KPay" &&
+            selectedPaymentMethod !== "WavePay"
+        ) {
+            showAppAlert({
+                title: "Warning",
+                message: "KPay သို့မဟုတ် WavePay ကို ရွေးပေးပါ။",
+                type: "warning"
+            });
+            return;
+        }
 
-        // ==========================================
-        // Check Screenshot
-        // ==========================================
-
+        // 3. Screenshot စစ်ပါ
         const fileInput =
             document.getElementById("paymentScreenshot");
 
-        const file =
-            fileInput.files[0];
+        const file = fileInput?.files?.[0];
 
         if (!file) {
-
             showAppAlert({
                 title: "Warning",
                 message: "Payment Screenshot တင်ပေးပါ။",
                 type: "warning"
             });
-
             return;
         }
 
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png"
+        ];
 
-        // ==========================================
-        // Button Loading
-        // ==========================================
+        if (!allowedTypes.includes(file.type)) {
+            showAppAlert({
+                title: "Warning",
+                message: "JPG သို့မဟုတ် PNG Screenshot ကိုသာ တင်ပါ။",
+                type: "warning"
+            });
+            return;
+        }
 
-        const button = this;
+        if (file.size > 5 * 1024 * 1024) {
+            showAppAlert({
+                title: "Warning",
+                message: "Screenshot သည် 5MB ထက် မကျော်ရပါ။",
+                type: "warning"
+            });
+            return;
+        }
 
-        const oldText =
-            button.innerHTML;
+        // 4. Anti-forgery token
+        const token = document.querySelector(
+            'input[name="__RequestVerificationToken"]'
+        )?.value;
 
+        // Server မှာ ValidateAntiForgeryToken သုံးထားရင်
+        // Token မရှိဘဲ request မပို့ပါနှင့်။
+        if (!token) {
+            showAppAlert({
+                title: "Error",
+                message: "Security token မတွေ့ပါ။ Page ကို Refresh လုပ်ပါ။",
+                type: "error"
+            });
+            return;
+        }
+
+        const oldText = button.innerHTML;
         button.disabled = true;
-
-        button.innerHTML =
-            "⏳ Order ပို့နေပါသည်...";
-
+        button.innerHTML = "⏳ Screenshot စစ်ဆေးနေပါသည်...";
 
         try {
+            // 5. FormData တည်ဆောက်ပါ
+            const formData = new FormData();
 
-            // ==========================================
-            // FormData
-            // ==========================================
+            formData.append("UserId", String(order.userId));
+            formData.append("ServerId", String(order.serverId));
+            formData.append("PackageName", String(order.packageName));
 
-            const formData =
-                new FormData();
-
-            formData.append(
-                "UserId",
-                window.currentOrder.userId
-            );
-
-         
-
-            formData.append(
-                "ServerId",
-                window.currentOrder.serverId
-            );
-
-            
-
-            formData.append(
-                "PackageName",
-                window.currentOrder.packageName
-            );
-
+            // Server က Package အလိုက် ပြန်စစ်ရပါမည်။
+            // Special package တွင် Diamond အရေအတွက် မရှိနိုင်ပါ။
             formData.append(
                 "Diamond",
-                window.currentOrder.diamond
+                String(order.diamond || 0)
             );
 
             formData.append(
                 "SellingPrice",
-                window.currentOrder.sellingPrice
+                String(order.sellingPrice)
             );
 
-            if (!selectedPaymentMethod) {
-
-                showAppAlert({
-                    title: "Warning",
-                    message: "KPay သို့မဟုတ် WavePay ကို ရွေးပေးပါ။",
-                    type: "warning"
-                });
-
-                return;
-
-            }
-
-            // Send Payment Method
             formData.append(
                 "PaymentMethod",
                 selectedPaymentMethod
             );
 
+            formData.append("paymentScreenshot", file);
+
             formData.append(
-                "paymentScreenshot",
-                file
+                "__RequestVerificationToken",
+                token
             );
 
+            // 6. SubmitOrder Controller ကို ခေါ်ပါ။
+            // OCR ကို Server-side Controller မှာ လုပ်ဆောင်မည်။
+            const response = await fetch(
+                "/Telegram/SubmitOrder",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
 
-            // ==========================================
-            // Submit
-            // ==========================================
+            const result = await response.json();
 
-            const response =
-                await fetch(
-                    "/Telegram/SubmitOrder",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-
-            const result =
-                await response.json();
-
-
-            if (!response.ok ||
-                !result.success) {
-
+            if (!response.ok || !result.walletDetected) {
                 throw new Error(
-                    result.message ||
-                    "Order ပို့၍မရပါ။"
+                    result.message || "Order ပို့၍မရပါ။"
                 );
             }
 
+            // 7. Order ကို PendingReview အဖြစ် လက်ခံထားကြောင်း ပြပါ။
+            if (result.status === "PendingReview") {
+                closePaymentModal();
 
-            // ==========================================
-            // Close Modal
-            // ==========================================
+                showAppAlert({
+                    title: "Order Received",
+                    message:
+                       result.message,
+                    type: "success"
+                });
 
-            closePaymentModal();
+                resetOrderForm();
 
+                if (fileInput) {
+                    fileInput.value = "";
+                }
 
-            // ==========================================
-            // Success
-            // ==========================================
+                const preview =
+                    document.getElementById("uploadPreview");
 
-            showAppAlert({
-                title: "Order Submitted",
-                message:
-                    "Order နှင့် Payment Screenshot ကို Seller ဆီသို့ ပို့ပြီးပါပြီ။ ကျေးဇူးတင်ပါတယ်။",
-                type: "success"
-            });
-
-            resetOrderForm();
-            // ==========================================
-            // Reset Screenshot
-            // ==========================================
-
-            fileInput.value = "";
-
-            document
-                .getElementById("uploadPreview")
-                .innerHTML = `
-                    <span class="upload-icon">
-                        📷
-                    </span>
-
-                    <span>
-                        Screenshot ရွေးရန်
-                    </span>
-
-                    <small>
-                        JPG / PNG
-                    </small>
-                `;
-
-
-
-            window.currentOrder = null;
-
+                if (preview) {
+                    preview.innerHTML = `
+    <span class="upload-icon" >📷</span >
+                        <span>Screenshot ရွေးရန်</span>
+                        <small>JPG / PNG</small>
+`;
+                }
+            } else {
+                showAppAlert({
+                    title: "Order Received",
+                    message:
+                        result.message ||
+                        "Order ကို လက်ခံရရှိပါပြီ။",
+                    type: "success"
+                });
+            }
         }
         catch (error) {
-
-            console.error(
-                "Submit Order Error:",
-                error
-            );
+            console.error("Submit Order Error:", error);
 
             showAppAlert({
                 title: "Error",
@@ -606,14 +847,10 @@ document
             });
         }
         finally {
-
             button.disabled = false;
-
-            button.innerHTML =
-                oldText;
+            button.innerHTML = oldText;
         }
     });
-
 
 document
     .getElementById("buyButton")
@@ -989,16 +1226,10 @@ function resetOrderForm() {
     }
 
 
-    // ==========================
-    // Clear current order
-    // ==========================
 
     window.currentOrder = null;
 
 
-    // ==========================
-    // Reset payment method
-    // ==========================
 
     selectedPaymentMethod = null;
 
