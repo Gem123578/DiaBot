@@ -6,7 +6,6 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Tesseract;
-using static diabot.Services.PaymentOcrServices;
 
 namespace diabot.Controllers
 {
