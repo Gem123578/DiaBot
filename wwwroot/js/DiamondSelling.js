@@ -820,6 +820,7 @@ document
                     fileInput.value = "";
                 }
 
+
                 const preview =
                     document.getElementById("uploadPreview");
 
