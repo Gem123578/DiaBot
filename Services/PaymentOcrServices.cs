@@ -2,8 +2,7 @@
 
 namespace diabot.Services
 {
-    public class PaymentOcrServices
-    {
+  
         public class PaymentOcrResult
         {
             public bool Success { get; set; }
@@ -115,4 +114,3 @@ namespace diabot.Services
             }
         }
     }
-}
